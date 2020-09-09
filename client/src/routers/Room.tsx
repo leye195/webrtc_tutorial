@@ -1,24 +1,29 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import styled from "styled-components";
 import socketClient from "socket.io-client";
-import { useParams, useHistory } from "react-router";
+import { useParams } from "react-router";
 import Peer from "peerjs";
-
+import Video from "../components/Video";
+import { v4 } from "uuid";
 type roomProps = {
   userId: string;
+  userList: string[];
+};
+type streamProps = {
+  id: string | undefined;
+  stream: MediaStream | undefined;
 };
 const Container = styled.div`
-  & .video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, auto-fill);
-    grid-auto-rows: 250px;
+  height: 50vh;
+  & .videos {
+    display: flex;
     justify-content: center;
-    gap: 10px;
-    video {
+    width: 400px;
+    height: 80%;
+    margin: 0 auto;
+    @media (min-width: 320px) and (max-width: 450px) {
+      flex-wrap: wrap;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background-color: black;
     }
   }
 `;
@@ -27,12 +32,23 @@ const InfoContainer = styled.div`
   padding: 10px;
   font-weight: bold;
 `;
+const Videos = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 400px;
+  height: 80%;
+  margin: 0 auto;
+  @media (min-width: 320px) and (max-width: 450px) {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+`;
 const Button = styled.button`
   all: unset;
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate3d(-50%, -50%, 0);
+  top: 0;
+  left: 0;
+  transform: translate3d(10%, 20%, 0);
   padding: 10px;
   border: 1px solid #e3e3e3;
   border-radius: 10px;
@@ -44,109 +60,124 @@ const Button = styled.button`
   cursor: pointer;
   box-shadow: 1px 1px 6px 3px #e3e3e3;
 `;
+
 const Room = () => {
   const { roomId = null } = useParams();
-  const history = useHistory();
   const socket = useRef(socketClient.connect("http://localhost:8080"));
-  const myPeer = useRef(
+  let myPeer = useRef(
     new Peer(undefined, {
-      host: "/",
-      port: 3001,
+      host: "localhost",
+      port: 9000,
+      path: "/peer/video",
     })
   );
-  const userList: any = useRef([]);
+  const [lastId, setLastId] = useState<string>("");
+  const [userList, setUserList] = useState<streamProps[]>([]);
   const videoList: any = useRef({});
-  const [id, setId] = useState("");
-  const myVideo = document.createElement("video");
 
-  const connectToNewUser = (userId: string, stream: MediaStream) => {
-    const call = myPeer.current.call(userId, stream);
-    const video = document.createElement("video");
-    call.on("stream", (userVideoStream) => {
-      addVideoStream(video, userVideoStream);
-    });
-    call.on("close", () => {
-      video.remove();
-    });
-    videoList.current[userId] = call;
-    userList.current.push(userId);
-    console.log(userList.current);
-  };
-
-  const addVideoStream = (video: any, stream: MediaStream) => {
-    video.srcObject = stream;
-    video.addEventListener("loadedmetadata", () => {
-      video.play();
-    });
-    document.querySelector(".video-grid")?.appendChild(video);
-  };
-
-  const openVideo = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
-      }); //get video
-      addVideoStream(myVideo, stream);
-      socket.current.on("user-connected", ({ userId }: roomProps) => {
-        connectToNewUser(userId, stream);
-      });
-
-      myPeer.current.on("call", (call) => {
-        call.answer(stream);
-        console.log("answer");
-        const video = document.createElement("video");
+  const addVideoStream = useCallback((id: string, stream: MediaStream) => {
+    if (userList.some((user) => user.id === id) === false)
+      setUserList((u) => [...u, { id, stream }]);
+  }, []);
+  const connectToNewUser = useCallback(
+    (userId: string, stream: MediaStream) => {
+      if (Object.keys(myPeer.current.connections).length < 1) {
+        //상대방 peer 영상 연결 시도
+        const call = myPeer.current.call(userId, stream);
         call.on("stream", (userVideoStream) => {
-          addVideoStream(video, userVideoStream);
+          addVideoStream(userId, userVideoStream);
         });
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  }, [connectToNewUser]);
+        call.on("close", () => {
+          myPeer.current.disconnect();
+        });
+        videoList.current[userId] = call;
+      }
+    },
+    [addVideoStream]
+  );
+
+  const initPeer = useCallback(
+    async (id) => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        }); //get video
+        addVideoStream(id, stream);
+        socket.current.on("user-connected", ({ userId }: roomProps) => {
+          connectToNewUser(userId, stream);
+        });
+        myPeer.current.on("call", (call) => {
+          if (Object.keys(myPeer.current.connections).length <= 1) {
+            console.log(
+              call.peer,
+              myPeer.current.connections,
+              myPeer.current.id
+            );
+            console.log("someone called you");
+            //상대방 peer 영상 연결 응답
+            call.answer(stream);
+            call.on("stream", (userVideoStream) => {
+              addVideoStream(id, userVideoStream);
+            });
+          } else {
+            console.log("max");
+          }
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    [connectToNewUser, addVideoStream]
+  );
 
   const closeVideo = () => {
+    //영상 종료
     socket.current.on("user-disconnected", ({ userId }: roomProps) => {
+      //console.log(userId);
       if (videoList.current[userId]) {
         videoList.current[userId].close();
         socket.current.emit("user-hangout");
-      } else {
-        socket.current.emit("user-hangout");
-        //myPeer.current.disconnect();
       }
+      setUserList((u) => u.filter((user) => user.id !== userId));
     });
   };
 
   const handleClose = () => {
-    socket.current.emit("user-leave");
-    socket.current.on("user-hangout", () => {
-      myPeer.current.disconnect();
-      setTimeout(() => {
-        //history.replace("/");
-      }, 500);
-    });
+    setTimeout(() => {
+      window.location.replace("/");
+    }, 500);
   };
 
   useEffect(() => {
-    if (Object.keys(videoList.current).length < 2) {
-      openVideo();
-      myPeer.current.on("open", (id) => {
-        setId(id);
-        userList.current.push(id);
-        console.log(userList.current);
-        socket.current.emit("join-room", { roomId, userId: id });
+    myPeer.current.on("open", (id) => {
+      if (myPeer.current.id === null) {
+        myPeer.current.id = lastId;
+      } else {
+        setLastId((cur) => myPeer.current.id);
+      }
+      socket.current.emit("join-room", { roomId, userId: myPeer.current.id });
+      socket.current.on("request-ignore", () => {
+        alert("이미 다른 사람과 연결되어 있습니다.");
+        window.location.replace("/");
       });
-      closeVideo();
-    }
+      initPeer(myPeer.current.id);
+    });
+    closeVideo();
+    return () => {};
   }, []);
 
   return (
     <>
       <Container>
         <InfoContainer>{`입장 코드: ${roomId}`}</InfoContainer>
-        <div className="video-grid"></div>
+        <Videos>
+          {userList.map((user) => {
+            return <Video key={v4()} id={user.id} stream={user.stream} />;
+          })}
+        </Videos>
       </Container>
-      <Button onClick={handleClose}>끊기</Button>
+      <Button onClick={handleClose}>나가기</Button>
     </>
   );
 };
