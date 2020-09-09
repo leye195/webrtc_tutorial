@@ -19,10 +19,11 @@
 
 - Ice (Interactive Connectivity Establishment)
 
-### [참고]
+### [참고하기]
 
 - https://youtube.com/watch?v=DvlyzDZDEq4&t=426s
 - https://peerjs.com/docs.html#peeron-close
 - https://github.com/peers/peerjs-server
 - https://github.com/jmcker/Peer-to-Peer-Cue-System
 - https://velog.io/@ehdrms2034/WebRTC-%EC%9B%B9%EB%B8%8C%EB%9D%BC%EC%9A%B0%EC%A0%80%EB%A1%9C-%ED%99%94%EC%83%81-%EC%B1%84%ED%8C%85%EC%9D%84-%EB%A7%8C%EB%93%A4-%EC%88%98-%EC%9E%88%EB%8B%A4%EA%B3%A0
+- https://alnova2.tistory.com/1110
