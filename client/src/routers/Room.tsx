@@ -5,14 +5,8 @@ import { useParams } from "react-router";
 import Peer from "peerjs";
 import Video from "../components/Video";
 import { v4 } from "uuid";
-type roomProps = {
-  userId: string;
-  userList: string[];
-};
-type streamProps = {
-  id: string | undefined;
-  stream: MediaStream | undefined;
-};
+import { roomProps, streamProps } from "../types/room";
+
 const Container = styled.div`
   height: 50vh;
   & .videos {

@@ -13,11 +13,24 @@
 
 #### 용어 정리
 
-- Stun Server, Turn Server
+##### Stun Server, Turn Server
 
-- SDP(Session Description Protocol)
+- Stun(Session Traversal Utilities for NAT)은 네트워크 프로토콜/패킷 포맷으로, 네트워크 환경에 대한 Discovery? 를 위한 것으로
+  메신저들 끼리 통신하기 위해 STUN패킷을 이용한다. STUN은 IP 종단을 연결하기 위해 2가지를 일을 해주는데
 
-- Ice (Interactive Connectivity Establishment)
+1. 어떤 종단이 NAT/방화벽 뒤에 있는지 판단
+2. 어떤 종단에 대한 공인IP 주소를 결정하고 NAT/방화벽의 유형을 알려준다.
+
+2)번의 정보를 가지고 P2P IP를 연결하기 위한 정보를 제공하며 STUN은 P2P IP연결을 위한 정보를 제공해주기만 한다.
+만약 어떤 종단의 환경이 P2P IP 연결이 불가능할 경우 STUN이 아닌 TURN을 활용해야 한다.
+
+- TURN(Traversal Using Relays around NAT), Peer간 직접 통신이 실패할 경우 종단점들 사이에 데이터를 릴레이를 수행하는
+  TURN 서버들을 사용하는데, TURN은 Peer들간의 미디어 스트리밍을 릴레이 하기 위해 사용
+  TURN은 공용 주소들을 가지고 있으며 미디어를 릴레이 하기 때문에 네트워크와 컴퓨팅 자원 소모될수 있다.
+
+##### SDP(Session Description Protocol)
+
+##### Ice (Interactive Connectivity Establishment)
 
 ### [참고하기]
 
