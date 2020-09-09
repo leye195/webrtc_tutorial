@@ -1,38 +1,39 @@
 # WebRTC Studying
 
-### ToDo
+## ToDo
 
 [ ] WebRTC를 활용해 간단한 화상통화를 구현해보자
 
-### 정리
+## 정리
 
-#### WebRTC?
+### WebRTC?
 
 - WebRTC는 웹 어플리케이션(최근에는 android 및 ios도 지원) 및 사이트들이 별도의 소프트웨어 없이 음성, 영상 미디어 혹은 텍스트, 파일 같은 데이터를 브라우져끼리 주고 받을 수 있게 만든 기술이다.
 - 어떤 플러그인 없이 음성채팅은 물론이며 화상채팅, 데이터 교환 까지도 가능하게하는 기술
 
-#### 용어 정리
+### 용어 정리
 
-##### Stun Server, Turn Server
+#### Stun Server, Turn Server
 
-- Stun(Session Traversal Utilities for NAT)은 네트워크 프로토콜/패킷 포맷으로, 네트워크 환경에 대한 Discovery? 를 위한 것으로
-  메신저들 끼리 통신하기 위해 STUN패킷을 이용한다. STUN은 IP 종단을 연결하기 위해 2가지를 일을 해주는데
+1. Stun(Session Traversal Utilities for NAT):
 
-1. 어떤 종단이 NAT/방화벽 뒤에 있는지 판단
-2. 어떤 종단에 대한 공인IP 주소를 결정하고 NAT/방화벽의 유형을 알려준다.
+- 네트워크 프로토콜/패킷 포맷으로, 네트워크 환경에 대한 Discovery? 를 위한 것으로메신저들 끼리 통신하기 위해 STUN패킷을 이용한다. STUN은 IP 종단을 연결하기 위해 2가지를 일을 해주는데<br/>
+- (1) 어떤 종단이 NAT/방화벽 뒤에 있는지 판단<br/>
+- (2) 어떤 종단에 대한 공인IP 주소를 결정하고 NAT/방화벽의 유형을 알려준다. <br/>
+- (2)번의 정보를 가지고 P2P IP를 연결하기 위한 정보를 제공하며 STUN은 P2P IP연결을 위한 정보를 제공해주기만 한다.<br/>
+- 만약 어떤 종단의 환경이 P2P IP 연결이 불가능할 경우 STUN이 아닌 TURN을 활용해야 한다.<br/>
 
-2)번의 정보를 가지고 P2P IP를 연결하기 위한 정보를 제공하며 STUN은 P2P IP연결을 위한 정보를 제공해주기만 한다.
-만약 어떤 종단의 환경이 P2P IP 연결이 불가능할 경우 STUN이 아닌 TURN을 활용해야 한다.
+2. TURN(Traversal Using Relays around NAT)
 
-- TURN(Traversal Using Relays around NAT), Peer간 직접 통신이 실패할 경우 종단점들 사이에 데이터를 릴레이를 수행하는
-  TURN 서버들을 사용하는데, TURN은 Peer들간의 미디어 스트리밍을 릴레이 하기 위해 사용
-  TURN은 공용 주소들을 가지고 있으며 미디어를 릴레이 하기 때문에 네트워크와 컴퓨팅 자원 소모될수 있다.
+- Peer간 직접 통신이 실패할 경우 종단점들 사이에 데이터를 릴레이를 수행하는<br/>
+- TURN 서버들을 사용하는데, TURN은 Peer들간의 미디어 스트리밍을 릴레이 하기 위해 사용<br/>
+- TURN은 공용 주소들을 가지고 있으며 미디어를 릴레이 하기 때문에 네트워크와 컴퓨팅 자원 소모될수 있다.<br/>
 
-##### SDP(Session Description Protocol)
+#### SDP(Session Description Protocol)
 
-##### Ice (Interactive Connectivity Establishment)
+#### Ice (Interactive Connectivity Establishment)
 
-### [참고하기]
+## [참고하기]
 
 - https://youtube.com/watch?v=DvlyzDZDEq4&t=426s
 - https://peerjs.com/docs.html#peeron-close
