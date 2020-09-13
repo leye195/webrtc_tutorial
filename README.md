@@ -1,10 +1,10 @@
 # WebRTC Studying
 
-[x] React (TypeScript), styled-components
-[x] Socket.io
-[x] Express
-[x] WebRTC (Peer)
-[x] Node.js
+- [x] React (TypeScript), styled-components
+- [x] Socket.io
+- [x] Express
+- [x] WebRTC (Peer)
+- [x] Node.js
 
 ## ToDo
 
