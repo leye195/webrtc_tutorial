@@ -1,8 +1,14 @@
 # WebRTC Studying
 
+[x] React (TypeScript), styled-components
+[x] Socket.io
+[x] Express
+[x] WebRTC (Peer)
+[x] Node.js
+
 ## ToDo
 
-[ ] WebRTC를 활용해 간단한 화상통화를 구현해보자
+[x] WebRTC를 활용해 간단한 화상통화를 구현해보자
 
 ## 정리
 

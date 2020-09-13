@@ -1,28 +1,27 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import SlideMenu from "./SlideMenu";
+import { NavLink } from "react-router-dom";
 const Container = styled.header`
   position: relative;
   height: 60px;
   width: 100vw;
-  background-color: gold;
+  background-color: #dcdcdce0;
 `;
 
 const MenuButton = styled.div`
-  position: absolute;
-  right: 10px;
   height: 100%;
   display: flex;
   align-items: center;
-  flex-direction: column;
   justify-content: center;
   cursor: pointer;
-`;
-const Line = styled.div`
-  width: 35px;
-  height: 5px;
-  margin: 2px;
-  background-color: white;
+  & a {
+    padding: 5px;
+    color: white;
+    font-weight: bold;
+    &.active {
+      color: rgb(52, 152, 219);
+    }
+  }
 `;
 
 const Header = () => {
@@ -37,13 +36,15 @@ const Header = () => {
   return (
     <>
       <Container>
-        <MenuButton onClick={handleToggle} onBlur={() => console.log("aaa")}>
-          <Line></Line>
-          <Line></Line>
-          <Line></Line>
+        <MenuButton onClick={handleToggle}>
+          <NavLink exact to={"/"} activeClassName="active">
+            홈
+          </NavLink>
+          <NavLink to={"/chat"} activeClassName="active">
+            채팅
+          </NavLink>
         </MenuButton>
       </Container>
-      <SlideMenu toggle={toggle} handleToggle={handleToggle} />
     </>
   );
 };
