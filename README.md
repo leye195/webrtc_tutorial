@@ -1,4 +1,4 @@
-# WebRTC Studying
+# WAVA (WebRTC Studying)
 
 - [x] React (TypeScript), styled-components
 - [x] Socket.io
