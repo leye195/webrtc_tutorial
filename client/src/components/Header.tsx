@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { NavLink } from "react-router-dom";
-const Container = styled.header`
+import { NavLink, useLocation } from "react-router-dom";
+const Container = styled.header<{ visible: boolean }>`
   position: relative;
   height: 60px;
   width: 100vw;
   background-color: #dcdcdce0;
+  display: ${(props) => (props.visible ? "none" : "block")};
 `;
 
 const MenuButton = styled.div`
@@ -26,6 +27,7 @@ const MenuButton = styled.div`
 
 const Header = () => {
   const [toggle, setToggle] = useState(false);
+  const { pathname } = useLocation();
   const handleToggle = () => {
     if (toggle) {
       setToggle(false);
@@ -34,18 +36,16 @@ const Header = () => {
     }
   };
   return (
-    <>
-      <Container>
-        <MenuButton onClick={handleToggle}>
-          <NavLink exact to={"/"} activeClassName="active">
-            홈
-          </NavLink>
-          <NavLink to={"/chat"} activeClassName="active">
-            채팅
-          </NavLink>
-        </MenuButton>
-      </Container>
-    </>
+    <Container visible={pathname.includes("room")}>
+      <MenuButton onClick={handleToggle}>
+        <NavLink exact to={"/"} activeClassName="active">
+          홈
+        </NavLink>
+        <NavLink to={"/chat"} activeClassName="active">
+          채팅
+        </NavLink>
+      </MenuButton>
+    </Container>
   );
 };
 export default Header;

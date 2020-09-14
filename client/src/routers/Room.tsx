@@ -6,6 +6,7 @@ import Peer from "peerjs";
 import Video from "../components/Video";
 import { v4 } from "uuid";
 import { roomProps, streamProps } from "../types/room";
+import { getSocket } from "../utils/socket";
 
 const Container = styled.div`
   height: 50vh;
@@ -37,14 +38,21 @@ const Videos = styled.div`
     width: 100%;
   }
 `;
+const ButtonContainer = styled.div`
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background-color: black;
+  width: 100vw;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 const Button = styled.button`
   all: unset;
-  position: absolute;
-  top: 0;
-  left: 0;
   transform: translate3d(10%, 20%, 0);
   padding: 10px;
-  border: 1px solid #e3e3e3;
   border-radius: 10px;
   background-color: #e74c3c;
   color: white;
@@ -52,12 +60,14 @@ const Button = styled.button`
   min-width: 150px;
   text-align: center;
   cursor: pointer;
-  box-shadow: 1px 1px 6px 3px #e3e3e3;
+  &:hover {
+    box-shadow: 0px 4px 13px 0px #e4e4e4;
+  }
 `;
 
 const Room = () => {
   const { roomId = null } = useParams();
-  const socket = useRef(socketClient.connect("http://localhost:8080"));
+  const socket = useRef(getSocket());
   let myPeer = useRef(
     new Peer(undefined, {
       host: "localhost",
@@ -108,7 +118,7 @@ const Room = () => {
               myPeer.current.connections,
               myPeer.current.id
             );
-            console.log("someone called you");
+            //console.log("someone called you");
             //상대방 peer 영상 연결 응답
             call.answer(stream);
             call.on("stream", (userVideoStream) => {
@@ -128,7 +138,6 @@ const Room = () => {
   const closeVideo = () => {
     //영상 종료
     socket.current.on("user-disconnected", ({ userId }: roomProps) => {
-      //console.log(userId);
       if (videoList.current[userId]) {
         videoList.current[userId].close();
         socket.current.emit("user-hangout");
@@ -150,6 +159,7 @@ const Room = () => {
       } else {
         setLastId((cur) => myPeer.current.id);
       }
+      console.log("..");
       socket.current.emit("join-room", { roomId, userId: myPeer.current.id });
       socket.current.on("request-ignore", () => {
         alert("이미 다른 사람과 연결되어 있습니다.");
@@ -171,7 +181,9 @@ const Room = () => {
           })}
         </Videos>
       </Container>
-      <Button onClick={handleClose}>나가기</Button>
+      <ButtonContainer>
+        <Button onClick={handleClose}>나가기</Button>
+      </ButtonContainer>
     </>
   );
 };

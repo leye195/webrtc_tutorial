@@ -5,7 +5,7 @@ import Room from "../routers/Room";
 import Header from "./Header";
 import GlobalStyle from "./GlobalStyle";
 import Chat from "../routers/Chat";
-
+import "../utils/socket";
 function App() {
   return (
     <Router>

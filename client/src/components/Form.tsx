@@ -2,6 +2,8 @@ import React, { useState, useCallback, FunctionComponent } from "react";
 import styled, { css } from "styled-components";
 import Submit from "./Button";
 import { loadUser, saveUser, checkExist } from "../utils/user";
+import { useDispatch } from "react-redux";
+import { userLogIn, userSignUp } from "../reducers/user";
 const Container = styled.div`
   width: 100%;
   height: 150px;
@@ -45,6 +47,8 @@ const Form: FunctionComponent = ({ children }) => {
   const [id, setId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordAgain, setPasswordAgain] = useState<string>("");
+  const dispatch = useDispatch();
+
   const handleId = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { value },
@@ -80,13 +84,15 @@ const Form: FunctionComponent = ({ children }) => {
       const type = dataset["type"];
       if (type === "login") {
         if (checkExist("user", { userId: id, password })) {
-          console.log("login");
+          dispatch(userLogIn(id));
           clearForm();
         }
       } else if (type === "signup") {
         //console.log(id, password, passwordAgain);
-        if (!checkExist("user", { userId: id, password }))
+        if (!checkExist("user", { userId: id, password })) {
           saveUser("user", { userId: id, password });
+          userSignUp({ userId: id });
+        }
         clearForm();
       }
     },
