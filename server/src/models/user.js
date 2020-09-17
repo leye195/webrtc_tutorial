@@ -3,30 +3,28 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-const saltRound = 10;
-//const myPlain = process.env.PLAIN_TEXT;
 
-const userSchema = new mongoose.Schema({
-  userId: {
-    type: String,
-    required: true,
-    unique: true,
+const saltRound = 10;
+const userSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    token: {
+      type: String,
+    },
+    tokenExp: {
+      type: Number,
+    },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  token: {
-    type: String,
-  },
-  tokenExp: {
-    type: Number,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  { timestamps: true }
+);
 userSchema.pre("save", function (next) {
   let user = this;
   if (user.isModified("password")) {

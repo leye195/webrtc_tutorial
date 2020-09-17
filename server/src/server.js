@@ -2,9 +2,24 @@ import express from "express";
 import http from "http";
 import socket from "socket.io";
 import ioRedis from "socket.io-redis";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import globalRouter from "./routers/globalRouter";
 import "./db";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser());
+app.use(globalRouter);
+
 const server = http.createServer(app);
 const io = socket(server);
 
@@ -47,7 +62,6 @@ io.on("connect", (socket) => {
   });
 });
 io.on("error", (err) => console.error("SocketIO Error", err));
-
 //console.log(peerServer);
 server.listen(8080, () => {
   console.log(`🚀 Express Server is Running on PORT:${8080}`);

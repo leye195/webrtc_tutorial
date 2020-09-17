@@ -83,16 +83,19 @@ const Form: FunctionComponent = ({ children }) => {
       } = e;
       const type = dataset["type"];
       if (type === "login") {
-        if (checkExist("user", { userId: id, password })) {
+        /* if (checkExist("user", { userId: id, password })) {
           dispatch(userLogIn(id));
           clearForm();
-        }
+        }*/
+        dispatch(userLogIn({ userId: id, password }));
+        clearForm();
       } else if (type === "signup") {
         //console.log(id, password, passwordAgain);
-        if (!checkExist("user", { userId: id, password })) {
+        /*if (!checkExist("user", { userId: id, password })) {
           saveUser("user", { userId: id, password });
           userSignUp({ userId: id });
-        }
+        }*/
+        dispatch(userSignUp({ userId: id, password }));
         clearForm();
       }
     },

@@ -3,13 +3,14 @@ import styled, { css } from "styled-components";
 import { useHistory, Link } from "react-router-dom";
 import { v4 } from "uuid";
 import Form from "../components/Form";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { rootState } from "../reducers";
 import Section from "../components/Home/Section";
 import Grid from "../components/Home/Grid";
 import GridButton from "../components/Home/GridButton";
 import Modal from "../components/Modal";
 import Title from "../components/Home/Title";
+import { userAuth } from "../reducers/user";
 
 const Container = styled.div`
   min-height: 90vh;
@@ -108,11 +109,12 @@ const Home = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const history = useHistory();
   const { isLoggedIn, userId } = useSelector((state: rootState) => state.user);
+  const dispatch = useDispatch();
 
   const handleCreate = useCallback(() => {
     history.push(`/room/${v4()}`);
   }, []);
-  
+
   const handleOpenModal = useCallback(() => {
     setModalOpen((cur) => true);
     clearRoomCode();
@@ -148,6 +150,7 @@ const Home = () => {
   };
 
   useEffect(() => {
+    dispatch(userAuth());
     if (isLoggedIn) {
       setToggle((cur) => false);
     }

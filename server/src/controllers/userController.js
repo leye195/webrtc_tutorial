@@ -31,6 +31,7 @@ export const signUp = (req, res, next) => {
 
 export const checkUser = (req, res, next) => {
   const { user } = req;
+  //console.log(user);
   return res.status(200).json({
     id: user._id,
     userId: user.userId,
