@@ -6,4 +6,8 @@ export type buttonType = {
   handleClick: (e: React.SyntheticEvent<HTMLButtonElement>) => void;
 };
 
+export type inputType = {
+  placeholder: string;
+};
+
 export type formType = {};

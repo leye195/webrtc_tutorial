@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { NavLink, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { userAuth } from "../reducers/user";
 const Container = styled.header<{ visible: boolean }>`
   position: relative;
   height: 60px;
@@ -28,6 +30,7 @@ const MenuButton = styled.div`
 const Header = () => {
   const [toggle, setToggle] = useState(false);
   const { pathname } = useLocation();
+  const dispatch = useDispatch();
   const handleToggle = () => {
     if (toggle) {
       setToggle(false);
@@ -35,6 +38,9 @@ const Header = () => {
       setToggle(true);
     }
   };
+  useEffect(() => {
+    dispatch(userAuth());
+  });
   return (
     <Container visible={pathname.includes("room")}>
       <MenuButton onClick={handleToggle}>

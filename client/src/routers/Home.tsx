@@ -150,7 +150,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    dispatch(userAuth());
     if (isLoggedIn) {
       setToggle((cur) => false);
     }
