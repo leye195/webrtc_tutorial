@@ -1,7 +1,6 @@
 import React, { useState, useCallback, FunctionComponent } from "react";
 import styled, { css } from "styled-components";
 import Submit from "./Button";
-import { loadUser, saveUser, checkExist } from "../utils/user";
 import { useDispatch } from "react-redux";
 import { userLogIn, userSignUp } from "../reducers/user";
 const Container = styled.div`

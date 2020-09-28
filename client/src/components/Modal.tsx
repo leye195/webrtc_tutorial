@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from "react";
 import styled from "styled-components";
+import { Modaltype } from "../types/types";
 
 const Layout = styled.div`
   position: absolute;
@@ -12,7 +13,7 @@ const Layout = styled.div`
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.8);
 `;
-const Container = styled.div`
+const Container = styled.div<{ direction: string }>`
   max-width: 600px;
   min-width: 250px;
   width: 100%;
@@ -23,12 +24,13 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: ${(props) => props.direction};
   z-index: 100;
 `;
-const Modal: FunctionComponent = ({ children }) => {
+const Modal = ({ children, direction }: Modaltype) => {
   return (
     <Layout>
-      <Container>{children}</Container>
+      <Container direction={direction}>{children}</Container>
     </Layout>
   );
 };

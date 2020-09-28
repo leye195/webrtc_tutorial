@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import styled from "styled-components";
-import socketClient from "socket.io-client";
 import { useParams } from "react-router";
 import Peer from "peerjs";
 import Video from "../components/Video";
 import { v4 } from "uuid";
 import { roomProps, streamProps } from "../types/room";
 import { getSocket } from "../utils/socket";
-import { StringLiteral } from "typescript";
 
 const Container = styled.div`
   height: 100vh;
@@ -77,8 +75,7 @@ const Room = () => {
   );
   const [lastId, setLastId] = useState<string>("");
   const [userList, setUserList] = useState<streamProps[]>([]);
-  const [sound, setSound] = useState<string>("on");
-  const [screen, setScreen] = useState<string>("off");
+  const [sound, setSound] = useState<string>("off");
   const videoList: any = useRef({});
 
   const addVideoStream = useCallback((id: string, stream: MediaStream) => {
@@ -150,9 +147,6 @@ const Room = () => {
   const toggleSound = () => {
     setSound((cur) => (cur === "off" ? "on" : "off"));
   };
-  const toggleScreen = () => {
-    setScreen((cur) => (cur === "off" ? "on" : "off"));
-  };
   const handleClose = () => {
     setTimeout(() => {
       window.location.replace("/");
@@ -189,7 +183,6 @@ const Room = () => {
                 id={user.id}
                 me={idx === 0}
                 sound={sound}
-                screen={screen}
                 stream={user.stream}
               />
             );

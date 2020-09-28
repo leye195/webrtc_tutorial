@@ -2,15 +2,16 @@ import React, { useState, useCallback, useEffect } from "react";
 import styled, { css } from "styled-components";
 import { useHistory } from "react-router-dom";
 import { v4 } from "uuid";
-import Form from "../components/Form";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { rootState } from "../reducers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPhone, faPhoneSlash } from "@fortawesome/free-solid-svg-icons";
+import Form from "../components/Form";
 import Section from "../components/Home/Section";
 import Grid from "../components/Home/Grid";
 import GridButton from "../components/Home/GridButton";
 import Modal from "../components/Modal";
 import Title from "../components/Home/Title";
-import { userAuth } from "../reducers/user";
 import Clock from "../components/Home/Clock";
 import { getSocket, getSocketId } from "../utils/socket";
 
@@ -54,10 +55,15 @@ const Input = styled.input`
   border-radius: 10px;
   margin-bottom: 20px;
 `;
-const ButtonContainer = styled.div<{ direction: string }>`
+const ButtonContainer = styled.div<{ direction: string; justify: string }>`
   display: flex;
   flex-direction: ${(props) => props.direction};
+  justify-content: ${(props) => props.justify};
   width: 80%;
+  svg {
+    padding: 5px;
+    color: white;
+  }
 `;
 const Button = styled.button<{ btnType: String }>`
   border: none;
@@ -81,6 +87,14 @@ const Button = styled.button<{ btnType: String }>`
       }
     `}
 `;
+const CallButton = styled.button<{ color: string }>`
+  background-color: ${(props) => props.color};
+  border: none;
+  border-radius: 50%;
+  margin: 5px;
+  padding: 5px;
+  cursor: pointer;
+`;
 const BackButton = styled.button<{ color: string }>`
   all: unset;
   position: absolute;
@@ -95,6 +109,10 @@ const H3 = styled.h3`
   margin-bottom: 10px;
 `;
 const Text = styled.p``;
+const Calling = styled(Text)`
+  font-weight: bold;
+  padding: 10px;
+`;
 const CodeNumber = styled(Text)`
   text-align: center;
   padding: 10px;
@@ -114,12 +132,12 @@ const Home = () => {
   const socket = getSocket();
   const myCode = getSocketId();
   const [code, setCode] = useState<string>("");
+  const [callingId, setCallingId] = useState<string>("");
   const [toggle, setToggle] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [receivedCall, setReceivedCall] = useState<boolean>(false);
   const history = useHistory();
   const { isLoggedIn, userId } = useSelector((state: rootState) => state.user);
-  const dispatch = useDispatch();
   const handleOpenModal = useCallback(() => {
     setModalOpen((cur) => true);
     clearRoomCode();
@@ -131,8 +149,9 @@ const Home = () => {
 
   const callRequest = () => {
     if (code !== "") {
-      socket.emit("callRequest", code);
-      history.push(`/room/${v4()}`);
+      const roomId = v4();
+      socket.emit("callRequest", { code, myCode, roomId });
+      history.push(`/room/${roomId}`);
     } else {
       alert("");
     }
@@ -155,12 +174,22 @@ const Home = () => {
     setCode((cur) => "");
   };
 
+  const acceptCall = useCallback(() => {
+    socket.emit("acceptCall", () => {
+      socket.on("acceptCall", (roomId: any) => {
+        history.push(`/room/${roomId}`);
+      });
+    });
+  }, []);
+  const rejectCall = useCallback(() => {}, []);
   useEffect(() => {
     if (isLoggedIn) {
       setToggle((cur) => false);
-      socket.on("callReceived", (data: string) => {
-        if (data === myCode) {
-          console.log("received call");
+      socket.on("callReceived", (data: any) => {
+        const { code, userCode } = data;
+        if (code === myCode) {
+          console.log("received call", userCode);
+          setCallingId((cur) => userCode);
           setReceivedCall((cur) => true);
         }
       });
@@ -170,7 +199,7 @@ const Home = () => {
   return (
     <Container>
       {modalOpen && (
-        <Modal>
+        <Modal direction={"row"}>
           <Content>
             <Title size={"1.5"} text={"영상 통화"} />
             <InputContainer>
@@ -181,7 +210,7 @@ const Home = () => {
               />
               <Input defaultValue={userId} placeholder="입장 이름" />
             </InputContainer>
-            <ButtonContainer direction={"row"}>
+            <ButtonContainer direction={"row"} justify={"none"}>
               <Button btnType="default" onClick={handleCloseModal}>
                 취소
               </Button>
@@ -192,7 +221,19 @@ const Home = () => {
           </Content>
         </Modal>
       )}
-      {receivedCall && <Modal></Modal>}
+      {receivedCall && (
+        <Modal direction={"column"}>
+          <Calling>{`${callingId} is calling`}</Calling>
+          <ButtonContainer direction={"row"} justify={"center"}>
+            <CallButton color={"rgb(127, 186, 0)"} onClick={acceptCall}>
+              <FontAwesomeIcon icon={faPhone} size={"2x"} />
+            </CallButton>
+            <CallButton color={"rgb(232, 16, 35)"} onClick={rejectCall}>
+              <FontAwesomeIcon icon={faPhoneSlash} size={"2x"} />
+            </CallButton>
+          </ButtonContainer>
+        </Modal>
+      )}
       {isLoggedIn ? (
         <Section>
           <Clock />
@@ -202,7 +243,7 @@ const Home = () => {
               bgColor={"rgb(52,152,219)"}
               handleClick={handleOpenModal}
             >
-              <H3>➕</H3>
+              <H3>📞</H3>
               <Text>통화</Text>
             </GridButton>
           </Grid>
@@ -212,8 +253,7 @@ const Home = () => {
           <HeadTitle>WEVA</HeadTitle>
           {toggle === false ? (
             <>
-              <Input placeholder="회의 ID 입력" onChange={handleChange} />
-              <ButtonContainer direction={"column"}>
+              <ButtonContainer direction={"column"} justify={"none"}>
                 <Button btnType="private" onClick={handleToggle}>
                   로그인
                 </Button>

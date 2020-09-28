@@ -1,3 +1,4 @@
+import React from "react";
 export type buttonType = {
   bgColor: string;
   textColor: string;
@@ -10,4 +11,7 @@ export type inputType = {
   placeholder: string;
 };
 
-export type formType = {};
+export type Modaltype = {
+  children: React.ReactNode;
+  direction: string;
+};

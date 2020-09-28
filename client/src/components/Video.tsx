@@ -5,7 +5,6 @@ type VideoProps = {
   id: string | undefined;
   stream: MediaStream | undefined;
   me: boolean;
-  screen: string;
   sound: string;
 };
 const VideoScreen = styled.video<{ me: boolean }>`
@@ -25,7 +24,7 @@ const VideoScreen = styled.video<{ me: boolean }>`
           margin: 10px;
         `}
 `;
-const Video = ({ id, stream, me, sound, screen }: VideoProps) => {
+const Video = ({ id, stream, me, sound }: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (!videoRef.current) return;

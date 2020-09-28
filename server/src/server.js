@@ -28,8 +28,15 @@ io.adapter(ioRedis({ host: "localhost", port: 6379 }));
 io.on("connect", (socket) => {
   let user = socket.id;
   io.emit("connected", socket.id);
-  socket.on("callRequest", (data) => {
-    io.emit("callReceived", data);
+  socket.on("callRequest", ({ code, myCode, roomId }) => {
+    //console.log(code, myCode, user);
+    socket.broadcast.emit("callReceived", { code, userCode: user, roomId });
+  });
+  socket.on("acceptCall", () => {
+    socket.emit("acceptCall", () => {});
+  });
+  socket.on("rejectCall", () => {
+    socket.broadcast.emit("rejectCall");
   });
   socket.on("join-room", (data) => {
     const { roomId, userId = "user" } = data;
