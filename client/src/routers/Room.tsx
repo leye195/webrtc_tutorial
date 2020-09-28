@@ -7,9 +7,11 @@ import Video from "../components/Video";
 import { v4 } from "uuid";
 import { roomProps, streamProps } from "../types/room";
 import { getSocket } from "../utils/socket";
+import { StringLiteral } from "typescript";
 
 const Container = styled.div`
-  height: 50vh;
+  height: 100vh;
+  background: linear-gradient(to bottom, #2980b9, #2c3e50);
   & .videos {
     display: flex;
     justify-content: center;
@@ -22,16 +24,12 @@ const Container = styled.div`
     }
   }
 `;
-const InfoContainer = styled.div`
-  text-align: center;
-  padding: 10px;
-  font-weight: bold;
-`;
 const Videos = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
-  width: 400px;
-  height: 80%;
+  width: 80%;
+  height: 80vh;
   margin: 0 auto;
   @media (min-width: 320px) and (max-width: 450px) {
     flex-wrap: wrap;
@@ -49,19 +47,21 @@ const ButtonContainer = styled.div`
   align-items: center;
   justify-content: center;
 `;
-const Button = styled.button`
+const Button = styled.button<{ buttonType: string }>`
   all: unset;
   transform: translate3d(10%, 20%, 0);
   padding: 10px;
   border-radius: 10px;
-  background-color: #e74c3c;
+  background-color: ${(props) =>
+    props.buttonType === "off" ? "#e74c3c" : "#3498db"};
   color: white;
   font-weight: bold;
   min-width: 150px;
   text-align: center;
   cursor: pointer;
+  margin: 5px;
   &:hover {
-    box-shadow: 0px 4px 13px 0px #e4e4e4;
+    opacity: 0.8;
   }
 `;
 
@@ -77,6 +77,8 @@ const Room = () => {
   );
   const [lastId, setLastId] = useState<string>("");
   const [userList, setUserList] = useState<streamProps[]>([]);
+  const [sound, setSound] = useState<string>("on");
+  const [screen, setScreen] = useState<string>("off");
   const videoList: any = useRef({});
 
   const addVideoStream = useCallback((id: string, stream: MediaStream) => {
@@ -145,7 +147,12 @@ const Room = () => {
       setUserList((u) => u.filter((user) => user.id !== userId));
     });
   };
-
+  const toggleSound = () => {
+    setSound((cur) => (cur === "off" ? "on" : "off"));
+  };
+  const toggleScreen = () => {
+    setScreen((cur) => (cur === "off" ? "on" : "off"));
+  };
   const handleClose = () => {
     setTimeout(() => {
       window.location.replace("/");
@@ -159,7 +166,7 @@ const Room = () => {
       } else {
         setLastId((cur) => myPeer.current.id);
       }
-      console.log("..");
+      //console.log("..");
       socket.current.emit("join-room", { roomId, userId: myPeer.current.id });
       socket.current.on("request-ignore", () => {
         alert("이미 다른 사람과 연결되어 있습니다.");
@@ -174,15 +181,28 @@ const Room = () => {
   return (
     <>
       <Container>
-        <InfoContainer>{`입장 코드: ${roomId}`}</InfoContainer>
         <Videos>
-          {userList.map((user) => {
-            return <Video key={v4()} id={user.id} stream={user.stream} />;
+          {userList.map((user, idx) => {
+            return (
+              <Video
+                key={v4()}
+                id={user.id}
+                me={idx === 0}
+                sound={sound}
+                screen={screen}
+                stream={user.stream}
+              />
+            );
           })}
         </Videos>
       </Container>
       <ButtonContainer>
-        <Button onClick={handleClose}>나가기</Button>
+        <Button buttonType={sound} onClick={toggleSound}>
+          {sound === "on" ? `소리 on` : `소리 off`}
+        </Button>
+        <Button buttonType="off" onClick={handleClose}>
+          종료
+        </Button>
       </ButtonContainer>
     </>
   );

@@ -26,11 +26,14 @@ const io = socket(server);
 const rooms = {};
 io.adapter(ioRedis({ host: "localhost", port: 6379 }));
 io.on("connect", (socket) => {
-  let user = null;
+  let user = socket.id;
+  io.emit("connected", socket.id);
+  socket.on("callRequest", (data) => {
+    io.emit("callReceived", data);
+  });
   socket.on("join-room", (data) => {
     const { roomId, userId = "user" } = data;
     socket.nickname = userId;
-    if (user === null) user = socket.id;
     if (!rooms[roomId] || rooms[roomId].length < 2) {
       if (rooms[roomId]) rooms[roomId].push(userId);
       else rooms[roomId] = [userId];
@@ -38,7 +41,7 @@ io.on("connect", (socket) => {
         if (err) console.log(err);
         else {
           io.in(roomId).clients((err, clients) => {
-            console.log(clients, socket.id);
+            //console.log(clients, socket.id);
           });
         }
       });

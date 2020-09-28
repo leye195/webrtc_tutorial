@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import styled, { css } from "styled-components";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { v4 } from "uuid";
 import Form from "../components/Form";
 import { useSelector, useDispatch } from "react-redux";
@@ -11,6 +11,8 @@ import GridButton from "../components/Home/GridButton";
 import Modal from "../components/Modal";
 import Title from "../components/Home/Title";
 import { userAuth } from "../reducers/user";
+import Clock from "../components/Home/Clock";
+import { getSocket, getSocketId } from "../utils/socket";
 
 const Container = styled.div`
   min-height: 90vh;
@@ -93,6 +95,11 @@ const H3 = styled.h3`
   margin-bottom: 10px;
 `;
 const Text = styled.p``;
+const CodeNumber = styled(Text)`
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+`;
 const Content = styled.div`
   width: 80%;
   height: 80%;
@@ -104,17 +111,15 @@ const Content = styled.div`
 `;
 
 const Home = () => {
-  const [roomCode, setRoomCode] = useState<string>("");
+  const socket = getSocket();
+  const myCode = getSocketId();
+  const [code, setCode] = useState<string>("");
   const [toggle, setToggle] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [receivedCall, setReceivedCall] = useState<boolean>(false);
   const history = useHistory();
   const { isLoggedIn, userId } = useSelector((state: rootState) => state.user);
   const dispatch = useDispatch();
-
-  const handleCreate = useCallback(() => {
-    history.push(`/room/${v4()}`);
-  }, []);
-
   const handleOpenModal = useCallback(() => {
     setModalOpen((cur) => true);
     clearRoomCode();
@@ -124,9 +129,10 @@ const Home = () => {
     clearRoomCode();
   }, []);
 
-  const handleEnter = () => {
-    if (roomCode !== "") {
-      history.push(`/room/${roomCode}`);
+  const callRequest = () => {
+    if (code !== "") {
+      socket.emit("callRequest", code);
+      history.push(`/room/${v4()}`);
     } else {
       alert("");
     }
@@ -137,21 +143,27 @@ const Home = () => {
       const {
         target: { value },
       } = e;
-      setRoomCode(value);
+      setCode(value);
     },
-    [roomCode]
+    [code]
   );
   const handleToggle = useCallback(() => {
     setToggle((cur) => !cur);
   }, []);
 
   const clearRoomCode = () => {
-    setRoomCode((cur) => "");
+    setCode((cur) => "");
   };
 
   useEffect(() => {
     if (isLoggedIn) {
       setToggle((cur) => false);
+      socket.on("callReceived", (data: string) => {
+        if (data === myCode) {
+          console.log("received call");
+          setReceivedCall((cur) => true);
+        }
+      });
     }
   }, [isLoggedIn]);
 
@@ -160,11 +172,11 @@ const Home = () => {
       {modalOpen && (
         <Modal>
           <Content>
-            <Title size={"1.5"} text={"회의 참가"} />
+            <Title size={"1.5"} text={"영상 통화"} />
             <InputContainer>
               <Input
-                placeholder="회의 ID"
-                value={roomCode}
+                placeholder="유저 ID"
+                value={code}
                 onChange={handleChange}
               />
               <Input defaultValue={userId} placeholder="입장 이름" />
@@ -173,26 +185,25 @@ const Home = () => {
               <Button btnType="default" onClick={handleCloseModal}>
                 취소
               </Button>
-              <Button btnType="private" onClick={handleEnter}>
-                참가
+              <Button btnType="private" onClick={callRequest}>
+                통화 요청
               </Button>
             </ButtonContainer>
           </Content>
         </Modal>
       )}
+      {receivedCall && <Modal></Modal>}
       {isLoggedIn ? (
         <Section>
+          <Clock />
+          <CodeNumber>{`통화ID: ${myCode}`}</CodeNumber>
           <Grid>
-            <GridButton bgColor={"orange"} handleClick={handleCreate}>
-              <H3>🎥</H3>
-              <Text>새 회의</Text>
-            </GridButton>
             <GridButton
               bgColor={"rgb(52,152,219)"}
               handleClick={handleOpenModal}
             >
               <H3>➕</H3>
-              <Text>참가</Text>
+              <Text>통화</Text>
             </GridButton>
           </Grid>
         </Section>
@@ -205,13 +216,6 @@ const Home = () => {
               <ButtonContainer direction={"column"}>
                 <Button btnType="private" onClick={handleToggle}>
                   로그인
-                </Button>
-                <Button
-                  btnType="default"
-                  onClick={handleEnter}
-                  disabled={roomCode.length > 0 ? false : true}
-                >
-                  회의 참가
                 </Button>
               </ButtonContainer>
             </>

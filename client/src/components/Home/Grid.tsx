@@ -9,8 +9,9 @@ const Container = styled.div`
   margin: auto;
   border: 1px solid #e3e3e3;
   border-radius: 40px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Grid: FunctionComponent = ({ children }) => {
