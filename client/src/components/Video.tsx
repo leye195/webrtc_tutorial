@@ -32,7 +32,7 @@ const Video = ({ id, stream, me, sound }: VideoProps) => {
       videoRef.current.srcObject = stream ? stream : null;
       videoRef.current.muted = sound === "off" ? true : false;
     }
-  }, [stream]);
+  }, [stream, sound]);
   return <VideoScreen id={id} me={me} ref={videoRef} autoPlay></VideoScreen>;
 };
 

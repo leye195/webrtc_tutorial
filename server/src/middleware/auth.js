@@ -5,7 +5,7 @@ export const auth = (req, res, next) => {
   user
     .findByToken(token)
     .then((user) => {
-      if (!user) return res.json({ isAuth: false, error: true });
+      if (!user) return res.status(400).json({ isAuth: false, error: true });
       req.token = token;
       req.user = user;
       next();

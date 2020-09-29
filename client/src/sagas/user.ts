@@ -10,6 +10,9 @@ import {
   AUTH_REQUEST,
   AUTH_SUCCESS,
   AUTH_FAILURE,
+  USER_LOG_OUT_REQUEST,
+  USER_LOG_OUT_SUCCESS,
+  USER_LOG_OUT_FAILURE,
 } from "../reducers/user";
 const api = axios.create({
   baseURL: "http://localhost:8080",
@@ -81,6 +84,39 @@ function* watchAuth() {
   yield takeLatest(AUTH_REQUEST, auth);
 }
 
+function logoutAPI() {
+  return api.post(
+    "/logout",
+    {},
+    {
+      withCredentials: true,
+    }
+  );
+}
+function* logout() {
+  try {
+    const result = yield call(logoutAPI);
+    console.log(result);
+    yield put({
+      type: USER_LOG_OUT_SUCCESS,
+      payload: result.data,
+    });
+  } catch (e) {
+    yield put({
+      type: USER_LOG_OUT_FAILURE,
+      error: e,
+    });
+  }
+}
+function* watchLogout() {
+  yield takeLatest(USER_LOG_OUT_REQUEST, logout);
+}
+
 export default function* userSaga() {
-  yield all([fork(watchLogin), fork(watchSignUp), fork(watchAuth)]);
+  yield all([
+    fork(watchLogin),
+    fork(watchSignUp),
+    fork(watchAuth),
+    fork(watchLogout),
+  ]);
 }

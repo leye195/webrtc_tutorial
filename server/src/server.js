@@ -8,7 +8,6 @@ import globalRouter from "./routers/globalRouter";
 import "./db";
 
 const app = express();
-
 app.use(
   cors({
     origin: true,
@@ -26,23 +25,26 @@ const io = socket(server);
 const rooms = {};
 io.adapter(ioRedis({ host: "localhost", port: 6379 }));
 io.on("connect", (socket) => {
-  let user = socket.id;
+  let user = socket.id,
+    room = "";
   io.emit("connected", socket.id);
   socket.on("callRequest", ({ code, myCode, roomId }) => {
-    //console.log(code, myCode, user);
     socket.broadcast.emit("callReceived", { code, userCode: user, roomId });
   });
   socket.on("acceptCall", () => {
-    socket.emit("acceptCall", () => {});
+    socket.emit("acceptCall", room);
   });
-  socket.on("rejectCall", () => {
-    socket.broadcast.emit("rejectCall");
+  socket.on("rejectCall", (data) => {
+    console.log("rejected");
+    socket.broadcast.emit("rejectCall", data);
   });
   socket.on("join-room", (data) => {
     const { roomId, userId = "user" } = data;
     socket.nickname = userId;
+    //console.log(rooms, roomId, userId, "....");
     if (!rooms[roomId] || rooms[roomId].length < 2) {
-      if (rooms[roomId]) rooms[roomId].push(userId);
+      if (rooms[roomId] && !rooms[roomId].includes(userId))
+        rooms[roomId].push(userId);
       else rooms[roomId] = [userId];
       io.of("/").adapter.remoteJoin(socket.id, roomId, (err) => {
         if (err) console.log(err);

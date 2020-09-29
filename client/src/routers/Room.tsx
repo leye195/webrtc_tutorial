@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router";
-import Peer from "peerjs";
 import Video from "../components/Video";
 import { v4 } from "uuid";
 import { roomProps, streamProps } from "../types/room";
 import { getSocket } from "../utils/socket";
+import { getPeer } from "../utils/peer";
 
 const Container = styled.div`
   height: 100vh;
@@ -64,24 +64,23 @@ const Button = styled.button<{ buttonType: string }>`
 `;
 
 const Room = () => {
-  const { roomId = null } = useParams();
+  const { roomId } = useParams<{ roomId: string }>();
   const socket = useRef(getSocket());
-  let myPeer = useRef(
-    new Peer(undefined, {
-      host: "localhost",
-      port: 9000,
-      path: "/peer/video",
-    })
-  );
+  let myPeer = useRef(getPeer({}));
   const [lastId, setLastId] = useState<string>("");
   const [userList, setUserList] = useState<streamProps[]>([]);
   const [sound, setSound] = useState<string>("off");
   const videoList: any = useRef({});
-
-  const addVideoStream = useCallback((id: string, stream: MediaStream) => {
-    if (userList.some((user) => user.id === id) === false)
-      setUserList((u) => [...u, { id, stream }]);
-  }, []);
+  const addVideoStream = useCallback(
+    (id: string, stream: MediaStream) => {
+      if (!userList.some((user) => user.id === id))
+        if (userList.length < 2) {
+          setUserList((u) => [...u, { id, stream }]);
+          //userList = [...userList.current, { id, stream }];
+        }
+    },
+    [userList]
+  );
   const connectToNewUser = useCallback(
     (userId: string, stream: MediaStream) => {
       if (Object.keys(myPeer.current.connections).length < 1) {
@@ -104,27 +103,23 @@ const Room = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: false,
+          audio: true,
         }); //get video
         addVideoStream(id, stream);
         socket.current.on("user-connected", ({ userId }: roomProps) => {
+          console.log(userId);
           connectToNewUser(userId, stream);
         });
         myPeer.current.on("call", (call) => {
           if (Object.keys(myPeer.current.connections).length <= 1) {
-            console.log(
-              call.peer,
-              myPeer.current.connections,
-              myPeer.current.id
-            );
-            //console.log("someone called you");
+            console.log("someone called you");
             //상대방 peer 영상 연결 응답
             call.answer(stream);
             call.on("stream", (userVideoStream) => {
               addVideoStream(id, userVideoStream);
             });
           } else {
-            console.log("max");
+            //console.log("max");
           }
         });
       } catch (e) {
@@ -133,7 +128,6 @@ const Room = () => {
     },
     [connectToNewUser, addVideoStream]
   );
-
   const closeVideo = () => {
     //영상 종료
     socket.current.on("user-disconnected", ({ userId }: roomProps) => {
@@ -147,6 +141,11 @@ const Room = () => {
   const toggleSound = () => {
     setSound((cur) => (cur === "off" ? "on" : "off"));
   };
+  const rejectedCall = () => {
+    socket.current.on("rejectCall", (data: any) => {
+      if (roomId === data) window.location.replace("/");
+    });
+  };
   const handleClose = () => {
     setTimeout(() => {
       window.location.replace("/");
@@ -155,12 +154,6 @@ const Room = () => {
 
   useEffect(() => {
     myPeer.current.on("open", (id) => {
-      if (myPeer.current.id === null) {
-        myPeer.current.id = lastId;
-      } else {
-        setLastId((cur) => myPeer.current.id);
-      }
-      //console.log("..");
       socket.current.emit("join-room", { roomId, userId: myPeer.current.id });
       socket.current.on("request-ignore", () => {
         alert("이미 다른 사람과 연결되어 있습니다.");
@@ -168,15 +161,14 @@ const Room = () => {
       });
       initPeer(myPeer.current.id);
     });
+    rejectedCall();
     closeVideo();
-    return () => {};
-  }, []);
-
+  }, [initPeer, roomId, rejectedCall, userList]);
   return (
     <>
       <Container>
         <Videos>
-          {userList.map((user, idx) => {
+          {userList.slice(0, 2).map((user, idx) => {
             return (
               <Video
                 key={v4()}

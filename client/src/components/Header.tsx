@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { userAuth } from "../reducers/user";
+import { userAuth, userLogOut } from "../reducers/user";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPowerOff } from "@fortawesome/free-solid-svg-icons";
 const Container = styled.header<{ visible: boolean }>`
   position: relative;
   height: 60px;
@@ -27,6 +29,20 @@ const MenuButton = styled.div`
   }
 `;
 
+const LogoutButton = styled.div`
+  position: absolute;
+  right: 10px;
+  top: 0;
+  padding: 0 5px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  svg {
+    cursor: pointer;
+  }
+`;
+
 const Header = () => {
   const [toggle, setToggle] = useState(false);
   const { pathname } = useLocation();
@@ -37,6 +53,9 @@ const Header = () => {
     } else {
       setToggle(true);
     }
+  };
+  const handleLogout = () => {
+    dispatch(userLogOut());
   };
   useEffect(() => {
     dispatch(userAuth());
@@ -51,6 +70,9 @@ const Header = () => {
           채팅
         </NavLink>
       </MenuButton>
+      <LogoutButton>
+        <FontAwesomeIcon icon={faPowerOff} onClick={handleLogout} />
+      </LogoutButton>
     </Container>
   );
 };

@@ -38,4 +38,11 @@ export const checkUser = (req, res, next) => {
   });
 };
 
-export const logOut = (req, res, next) => {};
+export const logOut = (req, res, next) => {
+  const { user } = req;
+  User.findOneAndUpdate({ _id: user._id }, { token: "" }, (err, user) => {
+    if (err) return res.json({ success: false, err });
+    res.clearCookie("x_auth");
+    return res.status(200).json({ success: true });
+  });
+};

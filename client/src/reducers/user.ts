@@ -80,13 +80,13 @@ export default handleActions(
       return { ...state, isSignedUp: false, waitingSignUp: false };
     },
     [USER_LOG_OUT_REQUEST]: (state: initStateType, action: userActionType) => {
-      return { ...state, isLoggedIn: false, userId: "" };
+      return { ...state, userId: "" };
     },
     [USER_LOG_OUT_SUCCESS]: (state: initStateType, action: userActionType) => {
       return { ...state, isLoggedIn: false, userId: "" };
     },
     [USER_LOG_OUT_FAILURE]: (state: initStateType, action: userActionType) => {
-      return { ...state, isLoggedIn: false, userId: "" };
+      return { ...state };
     },
   },
   initState

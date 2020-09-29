@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import styled from "styled-components";
 
 type buttonType = {
@@ -29,8 +29,6 @@ const Button = styled.button<{ bgColor: string }>`
     box-shadow: 0px 4px 6px 2px #e3e3e3;
   }
 `;
-const Text = styled.p``;
-
 const GridButton = ({
   bgColor = "white",
   handleClick,

@@ -6,6 +6,7 @@ import Header from "./Header";
 import GlobalStyle from "./GlobalStyle";
 import Chat from "../routers/Chat";
 import "../utils/socket";
+//simport "../utils/peer";
 function App() {
   return (
     <Router>

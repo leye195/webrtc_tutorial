@@ -105,6 +105,22 @@ const BackButton = styled.button<{ color: string }>`
   margin: 5px;
   cursor: pointer;
 `;
+const CallingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: callingAni 1.2s infinite forwards;
+  @keyframes callingAni {
+    from {
+      transform: scale(0.9);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+`;
+
 const H3 = styled.h3`
   margin-bottom: 10px;
 `;
@@ -131,17 +147,19 @@ const Content = styled.div`
 const Home = () => {
   const socket = getSocket();
   const myCode = getSocketId();
+  const history = useHistory();
+  const [room, setRoom] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [callingId, setCallingId] = useState<string>("");
   const [toggle, setToggle] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [receivedCall, setReceivedCall] = useState<boolean>(false);
-  const history = useHistory();
   const { isLoggedIn, userId } = useSelector((state: rootState) => state.user);
   const handleOpenModal = useCallback(() => {
     setModalOpen((cur) => true);
     clearRoomCode();
   }, []);
+
   const handleCloseModal = useCallback(() => {
     setModalOpen((cur) => false);
     clearRoomCode();
@@ -157,15 +175,13 @@ const Home = () => {
     }
   };
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const {
-        target: { value },
-      } = e;
-      setCode(value);
-    },
-    [code]
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const {
+      target: { value },
+    } = e;
+    setCode(value);
+  }, []);
+
   const handleToggle = useCallback(() => {
     setToggle((cur) => !cur);
   }, []);
@@ -175,26 +191,26 @@ const Home = () => {
   };
 
   const acceptCall = useCallback(() => {
-    socket.emit("acceptCall", () => {
-      socket.on("acceptCall", (roomId: any) => {
-        history.push(`/room/${roomId}`);
-      });
-    });
-  }, []);
-  const rejectCall = useCallback(() => {}, []);
+    history.push(`/room/${room}`);
+  }, [history, room]);
+
+  const rejectCall = useCallback(() => {
+    socket.emit("rejectCall", room);
+    setReceivedCall((cur) => false);
+  }, [socket, room]);
   useEffect(() => {
     if (isLoggedIn) {
       setToggle((cur) => false);
       socket.on("callReceived", (data: any) => {
-        const { code, userCode } = data;
+        const { code, userCode, roomId } = data;
         if (code === myCode) {
-          console.log("received call", userCode);
           setCallingId((cur) => userCode);
           setReceivedCall((cur) => true);
+          setRoom((cur) => roomId);
         }
       });
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, socket, myCode]);
 
   return (
     <Container>
@@ -223,15 +239,17 @@ const Home = () => {
       )}
       {receivedCall && (
         <Modal direction={"column"}>
-          <Calling>{`${callingId} is calling`}</Calling>
-          <ButtonContainer direction={"row"} justify={"center"}>
-            <CallButton color={"rgb(127, 186, 0)"} onClick={acceptCall}>
-              <FontAwesomeIcon icon={faPhone} size={"2x"} />
-            </CallButton>
-            <CallButton color={"rgb(232, 16, 35)"} onClick={rejectCall}>
-              <FontAwesomeIcon icon={faPhoneSlash} size={"2x"} />
-            </CallButton>
-          </ButtonContainer>
+          <CallingWrapper>
+            <Calling>{`${callingId} is calling`}</Calling>
+            <ButtonContainer direction={"row"} justify={"center"}>
+              <CallButton color={"rgb(127, 186, 0)"} onClick={acceptCall}>
+                <FontAwesomeIcon icon={faPhone} size={"2x"} />
+              </CallButton>
+              <CallButton color={"rgb(232, 16, 35)"} onClick={rejectCall}>
+                <FontAwesomeIcon icon={faPhoneSlash} size={"2x"} />
+              </CallButton>
+            </ButtonContainer>
+          </CallingWrapper>
         </Modal>
       )}
       {isLoggedIn ? (
